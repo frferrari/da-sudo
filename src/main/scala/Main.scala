@@ -53,7 +53,7 @@ object Main {
         rowsValidity <- rowsValidityF
         columnsValidity <- columnsValidityF
         subgridsValidity <- subgridsValidityF
-      } yield rowsValidity & columnsValidity & subgridsValidity
+      } yield checkValidity(List(rowsValidity, columnsValidity, subgridsValidity))
     }
   }
 
@@ -68,7 +68,7 @@ object Main {
     Future.sequence(
       sudokuRows
         .map(checkRowOrColumnValidity)
-    ).map(_.fold(true)(_ & _))
+    ).map(checkValidity)
 
   /**
     * Check each column validity and returns a boolean, if any of the column is not valid,
@@ -82,7 +82,7 @@ object Main {
       sudokuRows
         .transpose
         .map(checkRowOrColumnValidity)
-    ).map(_.fold(true)(_ & _))
+    ).map(checkValidity)
 
   /**
     * Check each subgrid validity and returns a boolean, if any of the subgrid is not valid,
@@ -100,7 +100,7 @@ object Main {
         .flatMap(_.grouped(subgridsBound * subgridsBound).toList)
 
     Future.sequence(subgrids.map(checkRowOrColumnValidity))
-      .map(_.fold(true)(_ & _))
+      .map(checkValidity)
   }
 
   /**
@@ -115,4 +115,13 @@ object Main {
   def checkRowOrColumnValidity(rowValues: Seq[Int]): Future[Boolean] = Future {
     rowValues.size == rowValues.toSet.size
   }
+
+  /**
+    * Given a list of booleans returns true if all of them are true and if any of them is false
+    * then return false
+    *
+    * @param validities
+    * @return
+    */
+  def checkValidity(validities: Seq[Boolean]): Boolean = validities.fold(true)(_ & _)
 }
