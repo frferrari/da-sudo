@@ -1,6 +1,7 @@
 /**
   * Created by Francois FERRARI on 11/08/2018
   */
+
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -10,7 +11,7 @@ object Main {
   val subgridsBound: Int = 3
 
   def main(args: Array[String]) {
-    for( ln <- io.Source.stdin.getLines ) {
+    for (ln <- io.Source.stdin.getLines) {
       Try(ln.split(",").map(_.toInt)) match {
         case Success(rawValues) =>
           checkSudokuValidity(rawValues.toList)
@@ -30,6 +31,7 @@ object Main {
 
   /**
     * Check the sudoku grid validity based on the test/sudoku rules
+    *
     * @param rawValues
     * @return true if valid, false if invalid
     */
@@ -58,53 +60,59 @@ object Main {
   /**
     * Check each row validity and returns a boolean, if any of the rows is not valid, the
     * whole thing is invalid
+    *
     * @param sudokuRows
     * @return true if the rows are all valide, false if any of them is invalid
     */
-  def checkRowsValidity(sudokuRows: Seq[Seq[Int]]): Future[Boolean] = Future {
-    sudokuRows
-      .map(checkRowOrColumnValidity)
-      .fold(true)(_ & _)
-  }
+  def checkRowsValidity(sudokuRows: Seq[Seq[Int]]): Future[Boolean] =
+    Future.sequence(
+      sudokuRows
+        .map(checkRowOrColumnValidity)
+    ).map(_.fold(true)(_ & _))
 
   /**
     * Check each column validity and returns a boolean, if any of the column is not valid,
     * the whole thing is invalid
+    *
     * @param sudokuRows
     * @return true if the columns are all valid, false if any of them is invalid
     */
-  def checkColumnsValidity(sudokuRows: Seq[Seq[Int]]): Future[Boolean] = Future {
-    sudokuRows
-      .transpose
-      .map(checkRowOrColumnValidity)
-      .fold(true)(_ & _)
-  }
+  def checkColumnsValidity(sudokuRows: Seq[Seq[Int]]): Future[Boolean] =
+    Future.sequence(
+      sudokuRows
+        .transpose
+        .map(checkRowOrColumnValidity)
+    ).map(_.fold(true)(_ & _))
 
   /**
     * Check each subgrid validity and returns a boolean, if any of the subgrid is not valid,
     * the whole thing is invalid
+    *
     * @param sudokuRows
     * @return true if the subgrids aer all valid, false if any of them is invalid
     */
-  def checkSubGridsValidity(sudokuRows: Seq[Seq[Int]]): Future[Boolean] = Future {
+  def checkSubGridsValidity(sudokuRows: Seq[Seq[Int]]): Future[Boolean] = {
     val subgrids: Seq[Seq[Int]] =
       sudokuRows
         .map(_.grouped(subgridsBound).toList)
         .transpose
         .map(_.flatten)
-        .flatMap(_.grouped(subgridsBound*subgridsBound).toList)
+        .flatMap(_.grouped(subgridsBound * subgridsBound).toList)
 
-    subgrids
-      .map(checkRowOrColumnValidity)
-      .fold(true)(_ & _)
+    Future.sequence(subgrids.map(checkRowOrColumnValidity))
+      .map(_.fold(true)(_ & _))
   }
 
   /**
     * Checks the validity of a list of integers based on Sudoku rules
     * Here I expect numbers to be in the range of 1 to 9 (I could check for this in the real like, or earlier in the code)
+    *
+    * We could return a Future[Boolean] and use Future.sequence in the calling functions, but it's a bit overkill here
+    *
     * @param rowValues
     * @return
     */
-  def checkRowOrColumnValidity(rowValues: Seq[Int]): Boolean =
+  def checkRowOrColumnValidity(rowValues: Seq[Int]): Future[Boolean] = Future {
     rowValues.size == rowValues.toSet.size
+  }
 }

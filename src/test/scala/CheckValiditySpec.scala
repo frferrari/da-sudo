@@ -62,10 +62,10 @@ class CheckValiditySpec extends AsyncWordSpec {
 
   "checkRowOrColumnValidity" should {
     "return true for a valid list of integers" in {
-      assert(Main.checkRowOrColumnValidity(List(1, 2, 3, 4, 5, 6, 7, 8, 9)))
+      Main.checkRowOrColumnValidity(List(1, 2, 3, 4, 5, 6, 7, 8, 9)) map { validity => assert(validity) }
     }
     "return false for an invalid list of integers" in {
-      assert(! Main.checkRowOrColumnValidity(List(1, 2, 3, 4, 5, 6, 7, 8, 1)))
+      Main.checkRowOrColumnValidity(List(1, 2, 3, 4, 5, 6, 7, 8, 1)) map { validity => assert(!validity) }
     }
   }
 
