@@ -107,8 +107,6 @@ object Main {
     * Checks the validity of a list of integers based on Sudoku rules
     * Here I expect numbers to be in the range of 1 to 9 (I could check for this in the real like, or earlier in the code)
     *
-    * We could return a Future[Boolean] and use Future.sequence in the calling functions, but it's a bit overkill here
-    *
     * @param rowValues
     * @return
     */
